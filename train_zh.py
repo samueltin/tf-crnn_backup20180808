@@ -53,8 +53,8 @@ if __name__ == '__main__':
         dict_params = import_params_from_json(json_filename=args.get('params_file'))
         parameters = Params(**dict_params)
     else:
-        parameters = Params(train_batch_size=20,
-                            eval_batch_size=20,
+        parameters = Params(train_batch_size=128,
+                            eval_batch_size=128,
                             learning_rate=1e-3,  # 1e-3 recommended
                             learning_decay_rate=0.95,
                             learning_decay_steps=5000,
