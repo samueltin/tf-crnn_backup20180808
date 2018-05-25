@@ -252,7 +252,7 @@ def crnn_fn(features, labels, mode, params):
         # Convert string label to code label
         with tf.name_scope('str2code_conversion'):
             table_str2int = tf.contrib.lookup.HashTable(tf.contrib.lookup.KeyValueTensorInitializer(keys, values), -1)
-            splited = tf.string_split(labels, delimiter='')  # TODO change string split to utf8 split in next tf version
+            splited = tf.string_split(labels, delimiter='{')  # TODO change string split to utf8 split in next tf version
             codes = table_str2int.lookup(splited.values)
             sparse_code_target = tf.SparseTensor(splited.indices, codes, splited.dense_shape)
 

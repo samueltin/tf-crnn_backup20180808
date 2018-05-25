@@ -5,6 +5,7 @@ import os
 import json
 import time
 from glob import glob
+from src.read_dict import dict_as_str
 
 
 class CONST:
@@ -12,66 +13,75 @@ class CONST:
 
 
 class Alphabet:
-    LettersLowercase = 'abcdefghijklmnopqrstuvwxyz'  # 26
-    LettersCapitals = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'  # 26
-    Digits = '0123456789'  # 10
-    Symbols = " '.,:;-_=()[]{}/°"  # 17
+    # LettersLowercase = 'abcdefghijklmnopqrstuvwxyz'  # 26
+    # LettersCapitals = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'  # 26
+    # Digits = '0123456789'  # 10
+    # Symbols = " '.,:;-_=()[]{}/°"  # 17
     # Symbols = " '.,:-="  # 7
+    ChineseCharacters = dict_as_str()
+    print(len(ChineseCharacters))
     DecodingList = ['same', 'lowercase']
 
-    BLANK_SYMBOL = '$'
-    DIGITS_ONLY = Digits + BLANK_SYMBOL
-    LETTERS_DIGITS = Digits + LettersCapitals + LettersLowercase + BLANK_SYMBOL
-    LETTERS_DIGITS_LOWERCASE = Digits + LettersLowercase + BLANK_SYMBOL
-    LETTERS_ONLY = LettersCapitals + LettersLowercase + BLANK_SYMBOL
-    LETTERS_ONLY_LOWERCASE = LettersLowercase + BLANK_SYMBOL
-    LETTERS_EXTENDED = LettersCapitals + LettersLowercase + Symbols + BLANK_SYMBOL
-    LETTERS_EXTENDED_LOWERCASE = LettersLowercase + Symbols + BLANK_SYMBOL
-    LETTERS_DIGITS_EXTENDED = Digits + LettersCapitals + LettersLowercase + Symbols + BLANK_SYMBOL
-    LETTERS_DIGITS_EXTENDED_LOWERCASE = Digits + LettersLowercase + Symbols + BLANK_SYMBOL
+    BLANK_SYMBOL = 'Ç'
+    CHINESE_CHARACTERS = ChineseCharacters
+    # DIGITS_ONLY = Digits + BLANK_SYMBOL
+    # LETTERS_DIGITS = Digits + LettersCapitals + LettersLowercase + BLANK_SYMBOL
+    # LETTERS_DIGITS_LOWERCASE = Digits + LettersLowercase + BLANK_SYMBOL
+    # LETTERS_ONLY = LettersCapitals + LettersLowercase + BLANK_SYMBOL
+    # LETTERS_ONLY_LOWERCASE = LettersLowercase + BLANK_SYMBOL
+    # LETTERS_EXTENDED = LettersCapitals + LettersLowercase + Symbols + BLANK_SYMBOL
+    # LETTERS_EXTENDED_LOWERCASE = LettersLowercase + Symbols + BLANK_SYMBOL
+    # LETTERS_DIGITS_EXTENDED = Digits + LettersCapitals + LettersLowercase + Symbols + BLANK_SYMBOL
+    # LETTERS_DIGITS_EXTENDED_LOWERCASE = Digits + LettersLowercase + Symbols + BLANK_SYMBOL
     # TODO : Maybe add a unique code (unicode?) to each character and add mask
 
     LabelMapping = {
-        'digits_only': DIGITS_ONLY,
-        'letters_only': LETTERS_ONLY,
-        'letters_digits': LETTERS_DIGITS,
-        'letters_extended': LETTERS_EXTENDED,
-        'letters_digits_extended': LETTERS_DIGITS_EXTENDED
+        'chinese': CHINESE_CHARACTERS
     }
-    AlphabetsList = [DIGITS_ONLY, LETTERS_DIGITS, LETTERS_DIGITS_LOWERCASE, LETTERS_ONLY, LETTERS_ONLY_LOWERCASE,
-                     LETTERS_EXTENDED, LETTERS_EXTENDED_LOWERCASE, LETTERS_DIGITS_EXTENDED,
-                     LETTERS_DIGITS_EXTENDED_LOWERCASE]
-    LowercaseAlphabetsList = [LETTERS_DIGITS_LOWERCASE, LETTERS_ONLY_LOWERCASE,
-                              LETTERS_EXTENDED_LOWERCASE, LETTERS_DIGITS_EXTENDED_LOWERCASE]
-    FullAlphabetList = [DIGITS_ONLY, LETTERS_DIGITS, LETTERS_ONLY,
-                        LETTERS_EXTENDED, LETTERS_DIGITS_EXTENDED]
+    # LabelMapping = {
+    #     'digits_only': DIGITS_ONLY,
+    #     'letters_only': LETTERS_ONLY,
+    #     'letters_digits': LETTERS_DIGITS,
+    #     'letters_extended': LETTERS_EXTENDED,
+    #     'letters_digits_extended': LETTERS_DIGITS_EXTENDED
+    # }
+    # AlphabetsList = [DIGITS_ONLY, LETTERS_DIGITS, LETTERS_DIGITS_LOWERCASE, LETTERS_ONLY, LETTERS_ONLY_LOWERCASE,
+    #                  LETTERS_EXTENDED, LETTERS_EXTENDED_LOWERCASE, LETTERS_DIGITS_EXTENDED,
+    #                  LETTERS_DIGITS_EXTENDED_LOWERCASE]
+    # LowercaseAlphabetsList = [LETTERS_DIGITS_LOWERCASE, LETTERS_ONLY_LOWERCASE,
+    #                           LETTERS_EXTENDED_LOWERCASE, LETTERS_DIGITS_EXTENDED_LOWERCASE]
+    # FullAlphabetList = [DIGITS_ONLY, LETTERS_DIGITS, LETTERS_ONLY,
+    #                     LETTERS_EXTENDED, LETTERS_DIGITS_EXTENDED]
+    AlphabetsList = [CHINESE_CHARACTERS]
+    FullAlphabetList = [CHINESE_CHARACTERS]
 
     # This are codes for the case DecodingList = 'lowercase'
-    CODES_DIGITS_ONLY = list(range(len(Digits) + 1))
-    CODES_LETTERS_DIGITS = list(range(len(Digits))) + \
-                           list(range(len(Digits), len(Digits) + len(LettersCapitals))) + \
-                           list(range(len(Digits), len(Digits) + len(LettersLowercase) + 1))
-    CODES_LETTERS_DIGITS_LOWERCASE = list(range(len(Digits))) + \
-                                     list(range(len(Digits), len(Digits) + len(LettersLowercase) + 1))
-    CODES_LETTERS_ONLY = list(range(len(LettersCapitals))) + \
-                         list(range(len(LettersLowercase) + 1))
-    CODES_LETTERS_ONLY_LOWERCASE = list(range(len(LettersLowercase) + 1))
-    CODES_LETTERS_EXTENDED = list(range(len(LettersCapitals))) + \
-                             list(range(len(LettersLowercase))) + \
-                             list(range(len(LettersCapitals), len(LettersCapitals) + len(Symbols) + 1))
-    CODES_LETTERS_EXTENDED_LOWERCASE = list(range(len(LettersLowercase))) + \
-                                       list(range(len(LettersLowercase), len(LettersLowercase) + len(Symbols) + 1))
-    CODES_LETTERS_DIGITS_EXTENDED = list(range(len(Digits))) + \
-                                    list(range(len(Digits), len(Digits) + len(LettersCapitals))) + \
-                                    list(range(len(Digits), len(Digits) + len(LettersLowercase))) + \
-                                    list(range(len(Digits) + len(LettersCapitals),
-                                               len(Digits) + len(LettersCapitals) +
-                                               len(Symbols) + 1))
-    CODES_LETTERS_DIGITS_EXTENDED_LOWERCASE = list(range(len(Digits))) + \
-                                              list(range(len(Digits), len(Digits) + len(LettersLowercase))) + \
-                                              list(range(len(Digits) + len(LettersLowercase),
-                                                         len(Digits) + len(LettersLowercase) +
-                                                         len(Symbols) + 1))
+    # CODES_DIGITS_ONLY = list(range(len(Digits) + 1))
+    # CODES_LETTERS_DIGITS = list(range(len(Digits))) + \
+    #                        list(range(len(Digits), len(Digits) + len(LettersCapitals))) + \
+    #                        list(range(len(Digits), len(Digits) + len(LettersLowercase) + 1))
+    # CODES_LETTERS_DIGITS_LOWERCASE = list(range(len(Digits))) + \
+    #                                  list(range(len(Digits), len(Digits) + len(LettersLowercase) + 1))
+    # CODES_LETTERS_ONLY = list(range(len(LettersCapitals))) + \
+    #                      list(range(len(LettersLowercase) + 1))
+    # CODES_LETTERS_ONLY_LOWERCASE = list(range(len(LettersLowercase) + 1))
+    # CODES_LETTERS_EXTENDED = list(range(len(LettersCapitals))) + \
+    #                          list(range(len(LettersLowercase))) + \
+    #                          list(range(len(LettersCapitals), len(LettersCapitals) + len(Symbols) + 1))
+    # CODES_LETTERS_EXTENDED_LOWERCASE = list(range(len(LettersLowercase))) + \
+    #                                    list(range(len(LettersLowercase), len(LettersLowercase) + len(Symbols) + 1))
+    # CODES_LETTERS_DIGITS_EXTENDED = list(range(len(Digits))) + \
+    #                                 list(range(len(Digits), len(Digits) + len(LettersCapitals))) + \
+    #                                 list(range(len(Digits), len(Digits) + len(LettersLowercase))) + \
+    #                                 list(range(len(Digits) + len(LettersCapitals),
+    #                                            len(Digits) + len(LettersCapitals) +
+    #                                            len(Symbols) + 1))
+    # CODES_LETTERS_DIGITS_EXTENDED_LOWERCASE = list(range(len(Digits))) + \
+    #                                           list(range(len(Digits), len(Digits) + len(LettersLowercase))) + \
+    #                                           list(range(len(Digits) + len(LettersLowercase),
+    #                                                      len(Digits) + len(LettersLowercase) +
+    #                                                      len(Symbols) + 1))
+    CODES_CHINESE_CHARACTERS = list(range(len(CHINESE_CHARACTERS)))
 
 
 class Params:
@@ -124,35 +134,35 @@ class Params:
         if self.alphabet in Alphabet.LabelMapping.keys():
             self.alphabet = Alphabet.LabelMapping[self.alphabet]
 
-        if self.alphabet_decoding == 'lowercase' or self.alphabet_decoding in Alphabet.LowercaseAlphabetsList:
-            if self.alphabet == Alphabet.LETTERS_DIGITS:
-                self.alphabet_decoding = Alphabet.LETTERS_DIGITS_LOWERCASE
-                self._alphabet_codes = Alphabet.CODES_LETTERS_DIGITS
-                self._alphabet_decoding_codes = Alphabet.CODES_LETTERS_DIGITS_LOWERCASE
-                self.blank_label_code = self._alphabet_codes[-1]
-
-            elif self.alphabet == Alphabet.LETTERS_ONLY:
-                self.alphabet_decoding = Alphabet.LETTERS_ONLY_LOWERCASE
-                self._alphabet_codes = Alphabet.CODES_LETTERS_ONLY
-                self._alphabet_decoding_codes = Alphabet.CODES_LETTERS_ONLY_LOWERCASE
-                self.blank_label_code = self._alphabet_codes[-1]
-
-            elif self.alphabet == Alphabet.LETTERS_EXTENDED:
-                self.alphabet_decoding = Alphabet.LETTERS_EXTENDED_LOWERCASE
-                self._alphabet_codes = Alphabet.CODES_LETTERS_EXTENDED
-                self._alphabet_decoding_codes = Alphabet.CODES_LETTERS_EXTENDED_LOWERCASE
-                self.blank_label_code = self._alphabet_codes[-1]
-
-            elif self.alphabet == Alphabet.LETTERS_DIGITS_EXTENDED:
-                self.alphabet_decoding = Alphabet.LETTERS_DIGITS_EXTENDED_LOWERCASE
-                self._alphabet_codes = Alphabet.CODES_LETTERS_DIGITS_EXTENDED
-                self._alphabet_decoding_codes = Alphabet.CODES_LETTERS_DIGITS_EXTENDED_LOWERCASE
-
-        elif self.alphabet_decoding == 'same' or self.alphabet_decoding in Alphabet.FullAlphabetList:
-            self.alphabet_decoding = self.alphabet
-            self._alphabet_codes = list(range(len(self.alphabet)))
-            self.blank_label_code = self._alphabet_codes[-1]
-            self._alphabet_decoding_codes = self._alphabet_codes
+        # if self.alphabet_decoding == 'lowercase' or self.alphabet_decoding in Alphabet.LowercaseAlphabetsList:
+        #     if self.alphabet == Alphabet.LETTERS_DIGITS:
+        #         self.alphabet_decoding = Alphabet.LETTERS_DIGITS_LOWERCASE
+        #         self._alphabet_codes = Alphabet.CODES_LETTERS_DIGITS
+        #         self._alphabet_decoding_codes = Alphabet.CODES_LETTERS_DIGITS_LOWERCASE
+        #         self.blank_label_code = self._alphabet_codes[-1]
+        #
+        #     elif self.alphabet == Alphabet.LETTERS_ONLY:
+        #         self.alphabet_decoding = Alphabet.LETTERS_ONLY_LOWERCASE
+        #         self._alphabet_codes = Alphabet.CODES_LETTERS_ONLY
+        #         self._alphabet_decoding_codes = Alphabet.CODES_LETTERS_ONLY_LOWERCASE
+        #         self.blank_label_code = self._alphabet_codes[-1]
+        #
+        #     elif self.alphabet == Alphabet.LETTERS_EXTENDED:
+        #         self.alphabet_decoding = Alphabet.LETTERS_EXTENDED_LOWERCASE
+        #         self._alphabet_codes = Alphabet.CODES_LETTERS_EXTENDED
+        #         self._alphabet_decoding_codes = Alphabet.CODES_LETTERS_EXTENDED_LOWERCASE
+        #         self.blank_label_code = self._alphabet_codes[-1]
+        #
+        #     elif self.alphabet == Alphabet.LETTERS_DIGITS_EXTENDED:
+        #         self.alphabet_decoding = Alphabet.LETTERS_DIGITS_EXTENDED_LOWERCASE
+        #         self._alphabet_codes = Alphabet.CODES_LETTERS_DIGITS_EXTENDED
+        #         self._alphabet_decoding_codes = Alphabet.CODES_LETTERS_DIGITS_EXTENDED_LOWERCASE
+        #
+        # elif self.alphabet_decoding == 'same' or self.alphabet_decoding in Alphabet.FullAlphabetList:
+        self.alphabet_decoding = self.alphabet
+        self._alphabet_codes = list(range(len(self.alphabet)))
+        self.blank_label_code = self._alphabet_codes[-1]
+        self._alphabet_decoding_codes = self._alphabet_codes
 
         self._nclasses = self._alphabet_codes[-1] + 1
         self._blank_label_symbol = Alphabet.BLANK_SYMBOL
