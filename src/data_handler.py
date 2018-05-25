@@ -26,7 +26,7 @@ def data_loader(csv_filename: str, params: Params, batch_size: int=128, data_aug
         # path, label = tf.decode_csv(value, record_defaults=default_line, field_delim=params.csv_delimiter,
         #                             name='csv_reading_op')
         path, label = tf.decode_csv(print_out, record_defaults=default_line, field_delim=params.csv_delimiter,
-                                    name='csv_reading_op')
+                                    use_quote_delim=False, name='csv_reading_op')
 
         image, img_width = image_reading(path, resized_size=params.input_shape,
                                          data_augmentation=data_augmentation, padding=True)
