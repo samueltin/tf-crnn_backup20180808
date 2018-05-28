@@ -236,11 +236,13 @@ def crnn_fn(features, labels, mode, params):
     n_pools = CONST.DIMENSION_REDUCTION_W_POOLING  # 2x2 pooling in dimension W on layer 1 and 2
     seq_len_inputs = tf.divide(features['images_widths'], n_pools, name='seq_len_input_op') - 1
 
-    predictions_dict = {'prob': logprob,
+    prediction_dict = {}
+    training_dict = {'prob': logprob,
                         'raw_predictions': raw_pred,
                         }
     try:
-        predictions_dict['filenames'] = features['filenames']
+        training_dict['filenames'] = features['filenames']
+        prediction_dict['filenames'] = features['filenames']
     except KeyError:
         pass
 
@@ -257,14 +259,14 @@ def crnn_fn(features, labels, mode, params):
             sparse_code_target = tf.SparseTensor(splited.indices, codes, splited.dense_shape)
 
         seq_lengths_labels = tf.bincount(tf.cast(sparse_code_target.indices[:, 0], tf.int32),
-                                         minlength=tf.shape(predictions_dict['prob'])[1])
+                                         minlength=tf.shape(training_dict['prob'])[1])
 
         # Loss
         # ----
         # >>> Cannot have longer labels than predictions -> error
         with tf.control_dependencies([tf.less_equal(sparse_code_target.dense_shape[1], tf.reduce_max(tf.cast(seq_len_inputs, tf.int64)))]):
             loss_ctc = tf.nn.ctc_loss(labels=sparse_code_target,
-                                      inputs=predictions_dict['prob'],
+                                      inputs=training_dict['prob'],
                                       sequence_length=tf.cast(seq_len_inputs, tf.int32),
                                       preprocess_collapse_repeated=False,
                                       ctc_merge_repeated=True,
@@ -311,23 +313,25 @@ def crnn_fn(features, labels, mode, params):
             values = [c for c in parameters.alphabet_decoding]
             table_int2str = tf.contrib.lookup.HashTable(tf.contrib.lookup.KeyValueTensorInitializer(keys, values), '?')
 
-            sparse_code_pred, log_probability = tf.nn.ctc_beam_search_decoder(predictions_dict['prob'],
+            sparse_code_pred, log_probability = tf.nn.ctc_beam_search_decoder(training_dict['prob'],
                                                                               sequence_length=tf.cast(seq_len_inputs, tf.int32),
                                                                               merge_repeated=False,
                                                                               beam_width=100,
                                                                               top_paths=2)
             # Score
-            predictions_dict['score'] = tf.subtract(log_probability[:, 0], log_probability[:, 1])
+            training_dict['score'] = tf.subtract(log_probability[:, 0], log_probability[:, 1])
+            prediction_dict['score'] = tf.subtract(log_probability[:, 0], log_probability[:, 1])
             # around 10.0 -> seems pretty sure, less than 5.0 bit unsure, some errors/challenging images
             sparse_code_pred = sparse_code_pred[0]
 
             sequence_lengths_pred = tf.bincount(tf.cast(sparse_code_pred.indices[:, 0], tf.int32),
-                                                minlength=tf.shape(predictions_dict['prob'])[1])
+                                                minlength=tf.shape(training_dict['prob'])[1])
 
             pred_chars = table_int2str.lookup(sparse_code_pred)
-            predictions_dict['words'] = get_words_from_chars(pred_chars.values, sequence_lengths=sequence_lengths_pred)
+            training_dict['words'] = get_words_from_chars(pred_chars.values, sequence_lengths=sequence_lengths_pred)
+            prediction_dict['words'] = get_words_from_chars(pred_chars.values, sequence_lengths=sequence_lengths_pred)
 
-            tf.summary.text('predicted_words', predictions_dict['words'][:10])
+            tf.summary.text('predicted_words', training_dict['words'][:10])
 
     # Evaluation ops
     # --------------
@@ -338,7 +342,7 @@ def crnn_fn(features, labels, mode, params):
             # Convert label codes to decoding alphabet to compare predicted and groundtrouth words
             target_chars = table_int2str.lookup(tf.cast(sparse_code_target, tf.int64))
             target_words = get_words_from_chars(target_chars.values, seq_lengths_labels)
-            accuracy = tf.metrics.accuracy(target_words, predictions_dict['words'], name='accuracy')
+            accuracy = tf.metrics.accuracy(target_words, training_dict['words'], name='accuracy')
 
             eval_metric_ops = {
                                'eval/accuracy': accuracy,
@@ -350,15 +354,27 @@ def crnn_fn(features, labels, mode, params):
     else:
         eval_metric_ops = None
 
-    export_outputs = {'predictions': tf.estimator.export.PredictOutput(predictions_dict)}
+    export_outputs = {'predictions': tf.estimator.export.PredictOutput(training_dict)}
 
-    return tf.estimator.EstimatorSpec(
-        mode=mode,
-        predictions=predictions_dict,
-        loss=loss_ctc,
-        train_op=train_op,
-        eval_metric_ops=eval_metric_ops,
-        export_outputs=export_outputs,
-        scaffold=tf.train.Scaffold()
-        # scaffold=tf.train.Scaffold(init_fn=None)  # Specify init_fn to restore from previous model
-    )
+    if mode == tf.estimator.ModeKeys.PREDICT:
+        return tf.estimator.EstimatorSpec(
+            mode=mode,
+            predictions=prediction_dict,
+            loss=loss_ctc,
+            train_op=train_op,
+            eval_metric_ops=eval_metric_ops,
+            export_outputs=export_outputs,
+            scaffold=tf.train.Scaffold()
+            # scaffold=tf.train.Scaffold(init_fn=None)  # Specify init_fn to restore from previous model
+        )
+    else:
+        return tf.estimator.EstimatorSpec(
+            mode=mode,
+            predictions=training_dict,
+            loss=loss_ctc,
+            train_op=train_op,
+            eval_metric_ops=eval_metric_ops,
+            export_outputs=export_outputs,
+            scaffold=tf.train.Scaffold()
+            # scaffold=tf.train.Scaffold(init_fn=None)  # Specify init_fn to restore from previous model
+        )

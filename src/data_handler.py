@@ -20,13 +20,13 @@ def data_loader(csv_filename: str, params: Params, batch_size: int=128, data_aug
         # Skip lines that have already been processed
         reader = tf.TextLineReader(name='CSV_Reader', skip_header_lines=0)
         key, value = reader.read(filename_queue, name='file_reading_op')
-        print_out = tf.Print(value, [value])
+        # print_out = tf.Print(value, [value])
 
         default_line = [['None'], ['None']]
-        # path, label = tf.decode_csv(value, record_defaults=default_line, field_delim=params.csv_delimiter,
-        #                             name='csv_reading_op')
-        path, label = tf.decode_csv(print_out, record_defaults=default_line, field_delim=params.csv_delimiter,
-                                    use_quote_delim=False, name='csv_reading_op')
+        path, label = tf.decode_csv(value, record_defaults=default_line, field_delim=params.csv_delimiter,
+                                    name='csv_reading_op')
+        # path, label = tf.decode_csv(print_out, record_defaults=default_line, field_delim=params.csv_delimiter,
+        #                             use_quote_delim=False, name='csv_reading_op')
 
         image, img_width = image_reading(path, resized_size=params.input_shape,
                                          data_augmentation=data_augmentation, padding=True)
