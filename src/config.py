@@ -164,7 +164,7 @@ class Params:
         self.blank_label_code = self._alphabet_codes[-1]
         self._alphabet_decoding_codes = self._alphabet_codes
 
-        self._nclasses = self._alphabet_codes[-1] + 1
+        self._nclasses = self._alphabet_codes[-1] + 2
         self._blank_label_symbol = Alphabet.BLANK_SYMBOL
 
     @property
