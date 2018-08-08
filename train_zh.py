@@ -23,7 +23,7 @@ def checkCSVFile(file, params):
     content = csvfile.read()
     csvfile.close()
     lines = content.split('\n')
-    for line in lines:
+    for line_no, line in enumerate(lines):
         # print(line)
         items=line.split('\t')
         if len(items) > 1:
@@ -33,7 +33,7 @@ def checkCSVFile(file, params):
                 if not char in params.alphabet:
                     print ('char='+char)
         else:
-            print('hello '+ line)
+            print('hello '+ line_no)
 
 
 if __name__ == '__main__':

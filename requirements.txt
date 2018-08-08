@@ -10,7 +10,6 @@ opencv-python==3.4.1.15
 protobuf==3.6.0
 scipy==1.1.0
 six==1.11.0
-tensorboard==1.8.0
 tensorflow==1.8.0
 termcolor==1.1.0
 tqdm==4.23.4

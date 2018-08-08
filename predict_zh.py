@@ -59,7 +59,7 @@ model_dir=parameters.output_model_dir,
 config=est_config
 )
 
-predictResults=estimator.predict(input_fn=data_loader(csv_filename='/Users/samueltin/Projects/jb/crnn_tf_data/Test/sample.csv',
+predictResults=estimator.predict(input_fn=data_loader(csv_filename='/Users/samueltin/Projects/sf/sf-image-generator/output/Test/sample.csv',
                                             params=parameters,
                                             batch_size=1,
                                             num_epochs=1,
@@ -69,7 +69,7 @@ predictResults=estimator.predict(input_fn=data_loader(csv_filename='/Users/samue
 is_vis=False
 
 ans_dict = {}
-ans_file = open('/Users/samueltin/Projects/jb/crnn_tf_data/Test/sample.csv', mode='r', encoding='utf-8')
+ans_file = open('/Users/samueltin/Projects/sf/sf-image-generator/output/Test/sample.csv', mode='r', encoding='utf-8')
 content = ans_file.read()
 ans_file.close()
 lines = content.split('\n')
@@ -84,6 +84,8 @@ for line in lines:
 total=1
 correct=0
 
+
+
 for i, prediction in enumerate(predictResults):
     words_in_bytes=prediction["words"]
     words = words_in_bytes.decode('utf-8')
@@ -93,6 +95,8 @@ for i, prediction in enumerate(predictResults):
         cv2.imshow('Test image', image)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+        print('Label={}, Predict={}, File={}, total={}, correct={}'.format(ans_dict[filename], words, filename, total,
+                                                                           correct))
     if words != ans_dict[filename]:
         print('Label={}, Predict={}, File={}, total={}, correct={}'.format(ans_dict[filename], words, filename, total, correct))
     else:
